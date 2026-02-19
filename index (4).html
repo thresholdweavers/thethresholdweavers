@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Threshold Weavers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe&family=Poiret+One&family=Lato:wght@200;300;400&family=Lovers+Quarrel&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Root & Reset ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:    #f5f0e8;
+      --warm:     #ede5d4;
+      --sage:     #8a9e8c;
+      --rust:     #b5715a;
+      --earth:    #6b5744;
+      --midnight: #1e1a16;
+      --gold:     #c8a96e;
+      --mist:     rgba(245,240,232,0.06);
+
+      --font-serif: 'Alumni Sans Pinstripe', sans-serif;
+      --font-display: 'Lovers Quarrel', cursive;
+      --font-sans: 'Lato', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--midnight);
+      color: var(--cream);
+      font-family: var(--font-serif);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ─── Custom Cursor ────────────────────────────────── */
+    .cursor {
+      position: fixed;
+      width: 10px; height: 10px;
+      background: var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.3s, height 0.3s, opacity 0.3s;
+      mix-blend-mode: screen;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(200,169,110,0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.18s ease, width 0.3s, height 0.3s, opacity 0.3s;
+    }
+
+    /* ─── Noise Texture Overlay ────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9000;
+      opacity: 0.4;
+    }
+
+    /* ─── Navigation ───────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.6rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      mix-blend-mode: normal;
+      transition: background 0.5s;
+    }
+    nav.scrolled {
+      background: rgba(30,26,22,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(200,169,110,0.12);
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.8rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--font-sans);
+      font-size: 0.72rem;
+      font-weight: 300;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--cream);
+      text-decoration: none;
+      opacity: 0.75;
+      transition: opacity 0.3s;
+    }
+    .nav-links a:hover { opacity: 1; }
+
+    /* ─── Hero ─────────────────────────────────────────── */
+    #hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Animated gradient orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      animation: float 18s ease-in-out infinite;
+    }
+    .orb-1 { width: 600px; height: 600px; background: radial-gradient(circle, #8a9e8c, transparent); top: -10%; left: -15%; animation-delay: 0s; }
+    .orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, #b5715a, transparent); bottom: -10%; right: -10%; animation-delay: -6s; }
+    .orb-3 { width: 400px; height: 400px; background: radial-gradient(circle, #c8a96e, transparent); top: 30%; left: 40%; animation-delay: -12s; }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      33%       { transform: translate(30px,-40px) scale(1.08); }
+      66%       { transform: translate(-20px, 25px) scale(0.94); }
+    }
+
+    /* Woven thread lines */
+    .thread-lines {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      opacity: 0.07;
+    }
+    .thread-lines svg { width: 100%; height: 100%; }
+
+    .hero-eyebrow {
+      font-family: 'Poiret One', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 400;
+      font-style: normal;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.6rem;
+      opacity: 0;
+      animation: fadeUp 1.2s 0.4s forwards;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(4.5rem, 11vw, 10rem);
+      font-weight: 400;
+      line-height: 1.0;
+      letter-spacing: -0.01em;
+      color: var(--cream);
+      opacity: 0;
+      animation: fadeUp 1.4s 0.6s forwards;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--gold);
+      display: block;
+    }
+    .hero-sub {
+      font-family: var(--font-serif);
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      font-weight: 300;
+      font-style: normal;
+      color: rgba(245,240,232,0.65);
+      margin-top: 1.6rem;
+      letter-spacing: 0.04em;
+      opacity: 0;
+      animation: fadeUp 1.4s 0.9s forwards;
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      animation: fadeIn 1s 1.8s forwards;
+    }
+    .hero-scroll span {
+      font-family: var(--font-sans);
+      font-size: 0.62rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.4);
+    }
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50%       { opacity: 1;   transform: scaleY(1.2); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+
+    /* ─── Botanical Flourishes ─────────────────────────── */
+    .hero-botanicals {
+      position: absolute;
+      width: 100%;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 1;
+      padding: 0 2vw;
+      opacity: 0;
+      animation: fadeIn 2s 1.2s forwards;
+    }
+    .botanical-left, .botanical-right {
+      width: clamp(160px, 18vw, 280px);
+      opacity: 0.82;
+      flex-shrink: 0;
+    }
+    .botanical-right {
+      transform: scaleX(-1);
+    }
+    @media (max-width: 700px) {
+      .botanical-left, .botanical-right { width: 110px; opacity: 0.5; }
+    }
+
+    /* ─── Section Base ─────────────────────────────────── */
+    section {
+      padding: 7rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section-full {
+      max-width: 100%;
+      padding: 7rem 0;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.9s ease, transform 0.9s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── Divider ──────────────────────────────────────── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+      opacity: 0.3;
+    }
+    .divider-glyph {
+      color: var(--gold);
+      font-size: 1rem;
+      opacity: 0.5;
+    }
+
+    /* ─── About Section ────────────────────────────────── */
+    #about {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+    .about-text .label {
+      font-family: var(--font-sans);
+      font-size: 0.68rem;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+    }
+    .about-text h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 5vw, 4.2rem);
+      font-weight: 400;
+      line-height: 1.15;
+      margin-bottom: 2rem;
+      color: var(--cream);
+    }
+    .about-text h2 em {
+      font-style: italic;
+      color: var(--gold);
+    }
+    .about-text p {
+      font-size: 1.08rem;
+      font-weight: 300;
+      line-height: 1.85;
+      font-style: normal;
+      color: rgba(245,240,232,0.78);
+      margin-bottom: 1.4rem;
+    }
+
+    /* Woven visual art element */
+    .weave-art {
+      position: relative;
+      height: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .weave-art svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ─── Quote Band ───────────────────────────────────── */
+    .quote-band {
+      background: linear-gradient(135deg, rgba(138,158,140,0.08) 0%, rgba(181,113,90,0.06) 100%);
+      border-top: 1px solid rgba(200,169,110,0.15);
+      border-bottom: 1px solid rgba(200,169,110,0.15);
+      padding: 5rem 2rem;
+      text-align: center;
+    }
+    .quote-band blockquote {
+      max-width: 760px;
+      margin: 0 auto;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-style: normal;
+      font-weight: 400;
+      line-height: 1.45;
+      color: var(--cream);
+      letter-spacing: 0.01em;
+    }
+    .quote-band cite {
+      display: block;
+      margin-top: 1.5rem;
+      font-family: var(--font-sans);
+      font-size: 0.72rem;
+      font-weight: 300;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-style: normal;
+    }
+
+    /* ─── Why We Sing ──────────────────────────────────── */
+    #why {
+      text-align: center;
+    }
+    #why h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 5vw, 4rem);
+      font-weight: 400;
+      margin-bottom: 1rem;
+    }
+    #why .intro {
+      font-size: 1.1rem;
+      font-weight: 300;
+      font-style: normal;
+      color: rgba(245,240,232,0.68);
+      max-width: 580px;
+      margin: 0 auto 4rem;
+      line-height: 1.75;
+    }
+    .pillars {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2.5rem;
+      margin-top: 1rem;
+    }
+    .pillar {
+      padding: 2.5rem 2rem;
+      border: 1px solid rgba(200,169,110,0.12);
+      border-radius: 2px;
+      background: rgba(245,240,232,0.03);
+      text-align: left;
+      transition: border-color 0.4s, background 0.4s, transform 0.4s;
+    }
+    .pillar:hover {
+      border-color: rgba(200,169,110,0.3);
+      background: rgba(245,240,232,0.055);
+      transform: translateY(-4px);
+    }
+    .pillar-glyph {
+      font-size: 1.6rem;
+      margin-bottom: 1.2rem;
+      display: block;
+    }
+    .pillar h3 {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 400;
+      font-style: normal;
+      margin-bottom: 0.8rem;
+      color: var(--gold);
+    }
+    .pillar p {
+      font-size: 0.96rem;
+      font-weight: 300;
+      line-height: 1.75;
+      color: rgba(245,240,232,0.68);
+    }
+
+    /* ─── Meet the Weavers ─────────────────────────────── */
+    #members {
+      text-align: center;
+    }
+    #members > .label {
+      font-family: var(--font-sans);
+      font-size: 0.68rem;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    #members > h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 5vw, 4rem);
+      font-weight: 400;
+      margin-bottom: 0.8rem;
+    }
+    #members > p {
+      font-size: 1.05rem;
+      font-weight: 300;
+      font-style: normal;
+      color: rgba(245,240,232,0.65);
+      max-width: 540px;
+      margin: 0 auto 4rem;
+      line-height: 1.8;
+    }
+    .members-grid {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .member-card {
+      width: 190px;
+      text-align: center;
+      position: relative;
+    }
+    .member-avatar {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      margin: 0 auto 1.2rem;
+      position: relative;
+      background: linear-gradient(135deg, var(--sage), var(--earth));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      color: var(--cream);
+      font-style: italic;
+      overflow: hidden;
+      border: 1px solid rgba(200,169,110,0.2);
+      transition: transform 0.5s, box-shadow 0.5s;
+    }
+    .member-card:hover .member-avatar {
+      transform: scale(1.05);
+      box-shadow: 0 0 40px rgba(200,169,110,0.15);
+    }
+    .member-avatar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent 60%);
+    }
+    /* Each avatar a unique hue */
+    .member-card:nth-child(1) .member-avatar { background: linear-gradient(135deg, #7a9e8c, #4a6b5a); }
+    .member-card:nth-child(2) .member-avatar { background: linear-gradient(135deg, #b5715a, #7a4030); }
+    .member-card:nth-child(3) .member-avatar { background: linear-gradient(135deg, #8a7a9e, #4a3a6b); }
+    .member-card:nth-child(4) .member-avatar { background: linear-gradient(135deg, #9e8a6b, #6b5a40); }
+    .member-card:nth-child(5) .member-avatar { background: linear-gradient(135deg, #6b8a9e, #3a5a6b); }
+
+    .member-name {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 400;
+      font-style: normal;
+      color: var(--cream);
+      margin-bottom: 0.3rem;
+    }
+    .member-role {
+      font-family: var(--font-sans);
+      font-size: 0.66rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+    }
+
+    /* ─── Contact / Connect ────────────────────────────── */
+    #connect {
+      text-align: center;
+      padding: 8rem 2rem;
+    }
+    #connect .label {
+      font-family: var(--font-sans);
+      font-size: 0.68rem;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+    }
+    #connect h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 400;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      color: var(--cream);
+    }
+    #connect h2 em {
+      font-style: italic;
+      color: var(--gold);
+    }
+    #connect p {
+      font-size: 1.05rem;
+      font-weight: 300;
+      font-style: normal;
+      color: rgba(245,240,232,0.65);
+      max-width: 480px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.8;
+    }
+    .btn {
+      display: inline-block;
+      font-family: var(--font-sans);
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--midnight);
+      background: var(--gold);
+      padding: 1rem 2.5rem;
+      text-decoration: none;
+      border: none;
+      cursor: none;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .btn:hover {
+      background: var(--cream);
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      margin-left: 1rem;
+    }
+    .btn-outline:hover {
+      background: rgba(200,169,110,0.1);
+      color: var(--cream);
+    }
+
+    /* ─── Footer ───────────────────────────────────────── */
+    footer {
+      border-top: 1px solid rgba(200,169,110,0.12);
+      padding: 3rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    footer .logo-footer {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      font-style: italic;
+    }
+    footer p {
+      font-family: var(--font-sans);
+      font-size: 0.65rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      color: rgba(245,240,232,0.3);
+      text-transform: uppercase;
+    }
+
+    /* ─── Parallax Band ────────────────────────────────── */
+    .parallax-band {
+      position: relative;
+      height: 320px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .parallax-inner {
+      position: absolute;
+      inset: -20%;
+      background: 
+        linear-gradient(180deg, var(--midnight) 0%, transparent 25%, transparent 75%, var(--midnight) 100%),
+        radial-gradient(ellipse at 40% 50%, rgba(138,158,140,0.22) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 50%, rgba(181,113,90,0.14) 0%, transparent 50%);
+      will-change: transform;
+    }
+    .parallax-text {
+      position: relative;
+      z-index: 2;
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-style: normal;
+      font-weight: 400;
+      color: var(--cream);
+      text-align: center;
+      max-width: 700px;
+      padding: 0 2rem;
+      line-height: 1.6;
+    }
+
+    /* ─── Horizontal Scroll Members ──────────────────── */
+    .h-scroll-track {
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+    }
+    .h-scroll-item {
+      min-width: 250px;
+      height: 300px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ─── Responsive ───────────────────────────────────── */
+    @media (max-width: 900px) {
+      #about { grid-template-columns: 1fr; gap: 3rem; }
+      .photo-inner img { height: 380px; }
+      .pillars { grid-template-columns: 1fr; }
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { gap: 1.5rem; }
+    }
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+
+    /* ─── Testimonials ─────────────────────────────────── */
+    #testimonials {
+      padding: 7rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    #testimonials > .label {
+      font-family: var(--font-sans);
+      font-size: 0.68rem;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    #testimonials > h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 5vw, 4rem);
+      font-weight: 400;
+      margin-bottom: 4rem;
+    }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+      text-align: left;
+    }
+    @media (max-width: 800px) {
+      .testimonials-grid { grid-template-columns: 1fr; }
+    }
+    .testimonial-card {
+      padding: 3rem 2.8rem;
+      border: 1px solid rgba(200,169,110,0.14);
+      background: rgba(245,240,232,0.025);
+      position: relative;
+      transition: border-color 0.4s, background 0.4s;
+    }
+    .testimonial-card:hover {
+      border-color: rgba(200,169,110,0.28);
+      background: rgba(245,240,232,0.045);
+    }
+    .testimonial-card::before {
+      content: '\201C';
+      position: absolute;
+      top: 1.2rem;
+      left: 2rem;
+      font-family: var(--font-display);
+      font-size: 5rem;
+      line-height: 1;
+      color: var(--gold);
+      opacity: 0.18;
+    }
+    .testimonial-card blockquote {
+      font-family: var(--font-serif);
+      font-size: 1.05rem;
+      font-weight: 300;
+      font-style: normal;
+      line-height: 1.85;
+      color: rgba(245,240,232,0.82);
+      margin-bottom: 2rem;
+    }
+    .testimonial-card .attribution {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .attribution-line {
+      width: 28px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+    .attribution-text {
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.85;
+      line-height: 1.5;
+    }
+    .attribution-text span {
+      display: block;
+      font-weight: 300;
+      color: rgba(245,240,232,0.45);
+      text-transform: none;
+      letter-spacing: 0.06em;
+      font-size: 0.68rem;
+      margin-top: 0.2rem;
+    }
+    /* Make Daniel & Lara span full width */
+    .testimonial-card.wide {
+      grid-column: 1 / -1;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Navigation -->
+  <nav id="nav">
+    <a class="nav-logo" href="#">The Threshold Weavers</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#why">Why We Sing</a></li>
+      <li><a href="#members">The Weavers</a></li>
+      <li><a href="#testimonials">Words</a></li>
+      <li><a href="#connect">Connect</a></li>
+    </ul>
+  </nav>
+
+  <!-- ═══ HERO ══════════════════════════════════════════ -->
+  <section id="hero">
+    <!-- Atmospheric orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Thread line art -->
+    <div class="thread-lines">
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="tg1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#c8a96e" stop-opacity="0"/>
+            <stop offset="50%" stop-color="#c8a96e" stop-opacity="1"/>
+            <stop offset="100%" stop-color="#c8a96e" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Woven pattern lines -->
+        <path d="M 0 450 Q 360 300 720 450 Q 1080 600 1440 450" stroke="url(#tg1)" stroke-width="0.8" fill="none"/>
+        <path d="M 0 400 Q 360 550 720 400 Q 1080 250 1440 400" stroke="url(#tg1)" stroke-width="0.8" fill="none"/>
+        <path d="M 0 350 Q 360 200 720 350 Q 1080 500 1440 350" stroke="url(#tg1)" stroke-width="0.6" fill="none"/>
+        <path d="M 0 500 Q 360 650 720 500 Q 1080 350 1440 500" stroke="url(#tg1)" stroke-width="0.6" fill="none"/>
+        <path d="M 0 300 Q 480 450 720 300 Q 960 150 1440 300" stroke="url(#tg1)" stroke-width="0.5" fill="none"/>
+        <path d="M 0 550 Q 480 400 720 550 Q 960 700 1440 550" stroke="url(#tg1)" stroke-width="0.5" fill="none"/>
+        <!-- Vertical warps -->
+        <line x1="240" y1="0" x2="240" y2="900" stroke="#c8a96e" stroke-width="0.4" stroke-opacity="0.5"/>
+        <line x1="480" y1="0" x2="480" y2="900" stroke="#c8a96e" stroke-width="0.4" stroke-opacity="0.3"/>
+        <line x1="720" y1="0" x2="720" y2="900" stroke="#c8a96e" stroke-width="0.6" stroke-opacity="0.6"/>
+        <line x1="960" y1="0" x2="960" y2="900" stroke="#c8a96e" stroke-width="0.4" stroke-opacity="0.3"/>
+        <line x1="1200" y1="0" x2="1200" y2="900" stroke="#c8a96e" stroke-width="0.4" stroke-opacity="0.5"/>
+      </svg>
+    </div>
+
+
+    <!-- Botanical Flourishes -->
+    <div class="hero-botanicals">
+      <!-- Left botanical -->
+      <svg class="botanical-left" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <defs>
+          <filter id="watercolor-l" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" seed="2" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+            <feGaussianBlur in="displaced" stdDeviation="0.7" result="blurred"/>
+            <feBlend in="blurred" in2="SourceGraphic" mode="multiply" result="blend"/>
+            <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+          </filter>
+          <!-- Soft wash colors -->
+          <radialGradient id="leaf-g1" cx="40%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#a8c5a0" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#7a9e7a" stop-opacity="0.18"/>
+          </radialGradient>
+          <radialGradient id="leaf-g2" cx="50%" cy="30%" r="65%">
+            <stop offset="0%" stop-color="#c8b89a" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#9e8a6b" stop-opacity="0.12"/>
+          </radialGradient>
+          <radialGradient id="bud-g1" cx="50%" cy="20%" r="60%">
+            <stop offset="0%" stop-color="#d4a89a" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#b5715a" stop-opacity="0.15"/>
+          </radialGradient>
+          <radialGradient id="stem-g" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#8a9e8c" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#6b8a6b" stop-opacity="0.2"/>
+          </radialGradient>
+        </defs>
+
+        <g filter="url(#watercolor-l)">
+          <!-- Main stem, gently curving right toward center -->
+          <path d="M 140 310 C 138 270 132 230 128 190 C 124 150 122 110 118 75" 
+                stroke="#8a9e8c" stroke-width="1.8" stroke-opacity="0.5" stroke-linecap="round"/>
+
+          <!-- Large lower-left leaf -->
+          <path d="M 132 240 C 100 225 65 205 48 178 C 70 182 100 195 118 215 C 105 195 88 172 80 148 C 100 165 118 188 128 210 Z"
+                fill="url(#leaf-g1)" stroke="#7a9e7a" stroke-width="0.6" stroke-opacity="0.3"/>
+          <!-- Leaf vein -->
+          <path d="M 128 210 C 108 192 88 170 80 148" stroke="#7a9e7a" stroke-width="0.5" stroke-opacity="0.3" stroke-linecap="round"/>
+
+          <!-- Mid right leaf -->
+          <path d="M 124 185 C 152 170 175 148 182 122 C 162 132 144 150 130 168 C 148 148 155 122 150 98 C 136 118 128 145 126 168 Z"
+                fill="url(#leaf-g1)" stroke="#7a9e7a" stroke-width="0.6" stroke-opacity="0.3"/>
+          <path d="M 126 168 C 137 148 146 122 150 98" stroke="#7a9e7a" stroke-width="0.5" stroke-opacity="0.3" stroke-linecap="round"/>
+
+          <!-- Small upper-left leaf -->
+          <path d="M 120 138 C 95 125 72 108 62 85 C 80 92 100 108 115 126 C 100 108 92 84 90 62 C 106 80 116 104 120 126 Z"
+                fill="url(#leaf-g2)" stroke="#9e8a6b" stroke-width="0.5" stroke-opacity="0.25"/>
+          <path d="M 120 126 C 106 106 96 82 90 62" stroke="#9e8a6b" stroke-width="0.4" stroke-opacity="0.25" stroke-linecap="round"/>
+
+          <!-- Budding branch upper right -->
+          <path d="M 119 108 C 130 90 145 74 152 55" stroke="#8a9e8c" stroke-width="1.2" stroke-opacity="0.4" stroke-linecap="round"/>
+          <!-- Tiny bud at tip -->
+          <ellipse cx="154" cy="50" rx="6" ry="9" fill="url(#bud-g1)" stroke="#b5715a" stroke-width="0.5" stroke-opacity="0.3" transform="rotate(-20 154 50)"/>
+          <!-- Bud petals hint -->
+          <path d="M 150 46 C 153 40 157 40 160 46" fill="#d4a89a" fill-opacity="0.35" stroke="none"/>
+
+          <!-- Second small bud on left branch -->
+          <path d="M 116 92 C 102 78 88 65 78 48" stroke="#8a9e8c" stroke-width="1" stroke-opacity="0.35" stroke-linecap="round"/>
+          <ellipse cx="76" cy="43" rx="5" ry="7.5" fill="url(#bud-g1)" stroke="#b5715a" stroke-width="0.4" stroke-opacity="0.28" transform="rotate(15 76 43)"/>
+
+          <!-- Tiny seed/berry cluster mid stem -->
+          <circle cx="135" cy="258" r="3.5" fill="#c8a96e" fill-opacity="0.35" stroke="#9e8a6b" stroke-width="0.5" stroke-opacity="0.3"/>
+          <circle cx="142" cy="252" r="2.5" fill="#c8a96e" fill-opacity="0.28" stroke="#9e8a6b" stroke-width="0.4" stroke-opacity="0.25"/>
+          <circle cx="129" cy="253" r="2" fill="#c8a96e" fill-opacity="0.22" stroke="#9e8a6b" stroke-width="0.4" stroke-opacity="0.2"/>
+
+          <!-- Delicate grass/wisp at base -->
+          <path d="M 138 310 C 145 285 155 265 160 245" stroke="#8a9e8c" stroke-width="0.8" stroke-opacity="0.3" stroke-linecap="round"/>
+          <path d="M 136 310 C 125 285 118 260 112 238" stroke="#8a9e8c" stroke-width="0.7" stroke-opacity="0.25" stroke-linecap="round"/>
+
+          <!-- Floating small leaf near top -->
+          <path d="M 115 78 C 103 68 94 54 96 40 C 106 50 112 64 115 76 Z"
+                fill="url(#leaf-g2)" stroke="#9e8a6b" stroke-width="0.4" stroke-opacity="0.22"/>
+        </g>
+      </svg>
+
+      <!-- Right botanical (mirrored via CSS scaleX) -->
+      <svg class="botanical-right" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <defs>
+          <filter id="watercolor-r" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" seed="7" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+            <feGaussianBlur in="displaced" stdDeviation="0.7" result="blurred"/>
+            <feBlend in="blurred" in2="SourceGraphic" mode="multiply" result="blend"/>
+            <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+          </filter>
+          <radialGradient id="leaf-g3" cx="40%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#a8c5a0" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#7a9e7a" stop-opacity="0.18"/>
+          </radialGradient>
+          <radialGradient id="leaf-g4" cx="50%" cy="30%" r="65%">
+            <stop offset="0%" stop-color="#c8b89a" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#9e8a6b" stop-opacity="0.12"/>
+          </radialGradient>
+          <radialGradient id="bud-g2" cx="50%" cy="20%" r="60%">
+            <stop offset="0%" stop-color="#d4a89a" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#b5715a" stop-opacity="0.15"/>
+          </radialGradient>
+        </defs>
+
+        <g filter="url(#watercolor-r)">
+          <!-- Main stem -->
+          <path d="M 140 310 C 138 270 132 230 128 190 C 124 150 122 110 118 75"
+                stroke="#8a9e8c" stroke-width="1.8" stroke-opacity="0.5" stroke-linecap="round"/>
+
+          <!-- Large lower-left leaf -->
+          <path d="M 132 240 C 100 225 65 205 48 178 C 70 182 100 195 118 215 C 105 195 88 172 80 148 C 100 165 118 188 128 210 Z"
+                fill="url(#leaf-g3)" stroke="#7a9e7a" stroke-width="0.6" stroke-opacity="0.3"/>
+          <path d="M 128 210 C 108 192 88 170 80 148" stroke="#7a9e7a" stroke-width="0.5" stroke-opacity="0.3" stroke-linecap="round"/>
+
+          <!-- Mid right leaf — slightly different shape for variety -->
+          <path d="M 124 178 C 155 162 178 136 180 108 C 158 120 140 142 128 162 C 144 138 148 110 140 86 C 128 108 124 138 124 162 Z"
+                fill="url(#leaf-g3)" stroke="#7a9e7a" stroke-width="0.6" stroke-opacity="0.3"/>
+          <path d="M 124 162 C 136 138 142 110 140 86" stroke="#7a9e7a" stroke-width="0.5" stroke-opacity="0.3" stroke-linecap="round"/>
+
+          <!-- Small upper leaf -->
+          <path d="M 120 132 C 92 118 70 100 62 76 C 80 84 102 100 116 120 C 102 100 96 76 96 54 C 110 72 118 98 120 120 Z"
+                fill="url(#leaf-g4)" stroke="#9e8a6b" stroke-width="0.5" stroke-opacity="0.25"/>
+          <path d="M 120 120 C 104 98 96 74 96 54" stroke="#9e8a6b" stroke-width="0.4" stroke-opacity="0.25" stroke-linecap="round"/>
+
+          <!-- Upper bud branch -->
+          <path d="M 119 108 C 130 90 145 74 152 55"
+                stroke="#8a9e8c" stroke-width="1.2" stroke-opacity="0.4" stroke-linecap="round"/>
+          <ellipse cx="154" cy="50" rx="6" ry="9" fill="url(#bud-g2)" stroke="#b5715a" stroke-width="0.5" stroke-opacity="0.3" transform="rotate(-20 154 50)"/>
+          <path d="M 150 46 C 153 40 157 40 160 46" fill="#d4a89a" fill-opacity="0.35"/>
+
+          <!-- Second bud -->
+          <path d="M 116 88 C 100 74 84 60 72 42"
+                stroke="#8a9e8c" stroke-width="1" stroke-opacity="0.35" stroke-linecap="round"/>
+          <ellipse cx="70" cy="37" rx="5" ry="7.5" fill="url(#bud-g2)" stroke="#b5715a" stroke-width="0.4" stroke-opacity="0.28" transform="rotate(15 70 37)"/>
+
+          <!-- Berries -->
+          <circle cx="135" cy="258" r="3.5" fill="#c8a96e" fill-opacity="0.35" stroke="#9e8a6b" stroke-width="0.5" stroke-opacity="0.3"/>
+          <circle cx="142" cy="252" r="2.5" fill="#c8a96e" fill-opacity="0.28" stroke="#9e8a6b" stroke-width="0.4" stroke-opacity="0.25"/>
+          <circle cx="129" cy="253" r="2" fill="#c8a96e" fill-opacity="0.22" stroke="#9e8a6b" stroke-width="0.4" stroke-opacity="0.2"/>
+
+          <!-- Wisps -->
+          <path d="M 138 310 C 145 285 155 265 160 245" stroke="#8a9e8c" stroke-width="0.8" stroke-opacity="0.3" stroke-linecap="round"/>
+          <path d="M 136 310 C 125 285 118 260 112 238" stroke="#8a9e8c" stroke-width="0.7" stroke-opacity="0.25" stroke-linecap="round"/>
+
+          <!-- Floating small leaf -->
+          <path d="M 115 78 C 103 68 94 54 96 40 C 106 50 112 64 115 76 Z"
+                fill="url(#leaf-g4)" stroke="#9e8a6b" stroke-width="0.4" stroke-opacity="0.22"/>
+        </g>
+      </svg>
+    </div>
+
+    <div style="position:relative;z-index:2;text-align:center;">
+      <p class="hero-eyebrow">SACRED SONGS FOR LIFE'S CROSSINGS * PAONIA COLORADO</p>
+      <h1 class="hero-title">
+        The Threshold<br/>
+        <em>Weavers</em>
+      </h1>
+      <p class="hero-sub">Five women weaving voice into medicine at the crossings that matter most</p>
+    </div>
+
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span>Descend</span>
+    </div>
+  </section>
+
+  <!-- ═══ ABOUT ══════════════════════════════════════════ -->
+  <section id="about" class="reveal">
+    <div class="about-text">
+      <p class="label">Our story</p>
+      <h2>Sacred song for<br/><em>life's crossings</em></h2>
+      <p>We are The Threshold Weavers — five women from Paonia, Colorado who gather in the ancient practice of ceremonial song. We sing at the places where life turns: at bedsides and birth days, in grief circles and celebrations, in the tender moments of transition that ask for more than words can hold.</p>
+      <p>A threshold is a liminal space — the doorway between what was and what will be. We believe these passages deserve to be held in beauty and in song. Our voices become a container, a comfort, a reminder that you are not crossing alone.</p>
+      <p>We also carry a second calling: to open the circle wider. Harmonic group singing is powerful medicine, and it belongs to everyone — not just those who call themselves singers. We weave our performances together with communal singing, so that every gathering becomes a shared experience of what voice can do.</p>
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-glyph">✦</span>
+        <div class="divider-line"></div>
+      </div>
+      <p style="font-style:italic;color:rgba(245,240,232,0.55);font-size:0.96rem;">Rooted in Paonia · Singing across the Roaring Fork Valley</p>
+    </div>
+
+    <!-- Group Photo -->
+    <div class="photo-frame reveal">
+      <div class="photo-inner">
+        <img src="Threshold_Weavers.jpeg" alt="The Threshold Weavers — five women gathered at the threshold" />
+        <div class="photo-overlay"></div>
+      </div>
+      <div class="photo-caption">
+        <span>Rebecca · Emily · Aja · Katie · Meghann</span>
+      </div>
+      <div class="photo-threads">
+        <svg viewBox="0 0 420 540" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+          <path d="M10,10 Q210,-20 410,10" stroke="#c8a96e" stroke-width="0.6" fill="none" stroke-opacity="0.3"/>
+          <path d="M10,530 Q210,560 410,530" stroke="#c8a96e" stroke-width="0.6" fill="none" stroke-opacity="0.3"/>
+          <path d="M0,100 Q-20,270 0,440" stroke="#8a9e8c" stroke-width="0.6" fill="none" stroke-opacity="0.25"/>
+          <path d="M420,100 Q440,270 420,440" stroke="#8a9e8c" stroke-width="0.6" fill="none" stroke-opacity="0.25"/>
+          <circle cx="10" cy="10" r="3" fill="#c8a96e" opacity="0.4"/>
+          <circle cx="410" cy="10" r="3" fill="#c8a96e" opacity="0.4"/>
+          <circle cx="10" cy="530" r="3" fill="#c8a96e" opacity="0.4"/>
+          <circle cx="410" cy="530" r="3" fill="#c8a96e" opacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Hidden old weave art div start (remove the old one below) -->
+    
+      <svg viewBox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#c8a96e" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#c8a96e" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8a9e8c" stop-opacity="0.8"/>
+            <stop offset="50%" stop-color="#c8a96e" stop-opacity="1"/>
+            <stop offset="100%" stop-color="#b5715a" stop-opacity="0.8"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Background glow -->
+        <ellipse cx="200" cy="240" rx="180" ry="200" fill="url(#glow)"/>
+
+        <!-- Woven circle threads - 5 voices -->
+        <circle cx="200" cy="240" r="140" stroke="rgba(200,169,110,0.1)" stroke-width="1" fill="none"/>
+        <circle cx="200" cy="240" r="100" stroke="rgba(200,169,110,0.08)" stroke-width="1" fill="none"/>
+        
+        <!-- Voice paths weaving in and out -->
+        <path d="M200,100 C320,140 320,340 200,380 C80,340 80,140 200,100Z" 
+              stroke="#8a9e8c" stroke-width="1.2" fill="none" stroke-opacity="0.7"
+              stroke-dasharray="4 4">
+          <animate attributeName="stroke-dashoffset" from="0" to="-40" dur="8s" repeatCount="indefinite"/>
+        </path>
+        <path d="M200,100 C340,180 300,360 180,380 C60,360 80,180 200,100Z" 
+              stroke="#c8a96e" stroke-width="1.2" fill="none" stroke-opacity="0.6"
+              stroke-dasharray="6 3">
+          <animate attributeName="stroke-dashoffset" from="0" to="36" dur="10s" repeatCount="indefinite"/>
+        </path>
+        <path d="M200,100 C280,200 260,350 200,380 C140,350 120,200 200,100Z" 
+              stroke="#b5715a" stroke-width="1" fill="none" stroke-opacity="0.5"
+              stroke-dasharray="3 6">
+          <animate attributeName="stroke-dashoffset" from="0" to="-28" dur="12s" repeatCount="indefinite"/>
+        </path>
+        <path d="M140,120 Q280,200 260,360 Q180,400 140,360 Q80,240 140,120Z" 
+              stroke="#6b8a9e" stroke-width="1" fill="none" stroke-opacity="0.5"
+              stroke-dasharray="5 5">
+          <animate attributeName="stroke-dashoffset" from="0" to="32" dur="9s" repeatCount="indefinite"/>
+        </path>
+        <path d="M260,120 Q320,240 260,360 Q200,400 160,360 Q120,240 260,120Z" 
+              stroke="#9e8a6b" stroke-width="1" fill="none" stroke-opacity="0.5"
+              stroke-dasharray="4 7">
+          <animate attributeName="stroke-dashoffset" from="0" to="-44" dur="11s" repeatCount="indefinite"/>
+        </path>
+
+        <!-- Central convergence point -->
+        <circle cx="200" cy="240" r="4" fill="#c8a96e" opacity="0.9">
+          <animate attributeName="r" values="4;6;4" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.9;1;0.9" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="200" cy="240" r="14" stroke="#c8a96e" stroke-width="0.5" fill="none" opacity="0.3">
+          <animate attributeName="r" values="14;22;14" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.3;0;0.3" dur="3s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Voice nodes -->
+        <circle cx="200" cy="102" r="5" fill="#8a9e8c" opacity="0.8"/>
+        <circle cx="324" cy="182" r="5" fill="#c8a96e" opacity="0.8"/>
+        <circle cx="280" cy="356" r="5" fill="#b5715a" opacity="0.8"/>
+        <circle cx="120" cy="356" r="5" fill="#6b8a9e" opacity="0.8"/>
+        <circle cx="76" cy="182" r="5" fill="#9e8a6b" opacity="0.8"/>
+
+        <!-- Node labels -->
+        <text x="200" y="88" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" fill="#8a9e8c" opacity="0.8" font-style="italic">Rebecca</text>
+        <text x="342" y="180" text-anchor="start" font-family="Cormorant Garamond,serif" font-size="11" fill="#c8a96e" opacity="0.8" font-style="italic">Emily</text>
+        <text x="290" y="378" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" fill="#b5715a" opacity="0.8" font-style="italic">Aja</text>
+        <text x="112" y="378" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" fill="#6b8a9e" opacity="0.8" font-style="italic">Katie</text>
+        <text x="50" y="180" text-anchor="end" font-family="Cormorant Garamond,serif" font-size="11" fill="#9e8a6b" opacity="0.8" font-style="italic">Meghann</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ═══ QUOTE BAND ════════════════════════════════════ -->
+  <div class="quote-band section-full reveal">
+    <blockquote>
+      "You do not need to call yourself a singer<br/>
+      to be held by song — or to hold others with it."
+    </blockquote>
+    <cite>— The Threshold Weavers</cite>
+  </div>
+
+  <!-- ═══ WHY WE SING ═══════════════════════════════════ -->
+  <section id="why" class="reveal">
+    <p class="label" style="font-family:var(--font-sans);font-size:0.68rem;font-weight:300;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;">The medicine</p>
+    <h2>Why We Sing</h2>
+    <p class="intro">At life's crossings — birth, death, grief, celebration — the body often knows what to do before the mind does. Song is one of the oldest ways we've answered that knowing.</p>
+
+    <div class="pillars">
+      <div class="pillar reveal">
+        <span class="pillar-glyph">◎</span>
+        <h3>At the Threshold</h3>
+        <p>We sing at bedside and birthside, in hospice rooms and grief circles. Our voices offer a container for what words cannot hold — a reminder that no one crosses alone. Song is presence made audible.</p>
+      </div>
+      <div class="pillar reveal" style="transition-delay:0.15s;">
+        <span class="pillar-glyph">◎</span>
+        <h3>In Community</h3>
+        <p>Harmonic group singing synchronizes heartbeats, regulates the nervous system, and opens something ancient in us. This medicine belongs to everyone. Every gathering we offer weaves choir song with communal voice — no experience needed, no audition, no performance.</p>
+      </div>
+      <div class="pillar reveal" style="transition-delay:0.3s;">
+        <span class="pillar-glyph">◎</span>
+        <h3>Trauma-Aware</h3>
+        <p>We hold our circles with care and intention — creating space that is brave, accessible, and honors the full range of what people carry. We know that the voice holds history, and we meet it gently.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══ TESTIMONIALS ══════════════════════════════════ -->
+  <section id="testimonials">
+    <p class="label reveal">In their words</p>
+    <h2 class="reveal">Voices that carry</h2>
+
+    <div class="testimonials-grid">
+
+      <!-- Christine -->
+      <div class="testimonial-card reveal">
+        <blockquote>
+          Hearing the Threshold Choir altered me. It felt as though I had received a spa treatment, with butterfly wings softly brushing over me, melting me into the gentlest state of peace. Their singing is heavenly!
+        </blockquote>
+        <div class="attribution">
+          <div class="attribution-line"></div>
+          <div class="attribution-text">
+            Christine Palafox
+            <span>Paonia Senior Center</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decorative spacer card with a pull-line -->
+      <div class="testimonial-card reveal" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-color:rgba(200,169,110,0.07);background:transparent;">
+        <svg viewBox="0 0 180 180" width="120" style="opacity:0.18;" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="90" cy="90" r="70" stroke="#c8a96e" stroke-width="0.8" fill="none" stroke-dasharray="5 4"/>
+          <circle cx="90" cy="90" r="48" stroke="#c8a96e" stroke-width="0.6" fill="none" stroke-dasharray="3 6"/>
+          <circle cx="90" cy="90" r="5" fill="#c8a96e"/>
+          <path d="M90,20 C140,50 140,130 90,160" stroke="#c8a96e" stroke-width="0.7" fill="none" stroke-dasharray="4 4"/>
+          <path d="M90,20 C40,50 40,130 90,160" stroke="#8a9e8c" stroke-width="0.7" fill="none" stroke-dasharray="4 4"/>
+          <path d="M20,90 C50,40 130,40 160,90" stroke="#b5715a" stroke-width="0.6" fill="none" stroke-dasharray="3 5"/>
+          <path d="M20,90 C50,140 130,140 160,90" stroke="#c8a96e" stroke-width="0.6" fill="none" stroke-dasharray="3 5"/>
+        </svg>
+        <p style="font-family:var(--font-display);font-style:normal;font-size:1.5rem;color:rgba(245,240,232,0.35);margin-top:1.5rem;line-height:1.6;">"Their presence was the best part of the ceremony."</p>
+      </div>
+
+      <!-- Daniel & Lara — full width -->
+      <div class="testimonial-card wide reveal">
+        <blockquote>
+          We invited the Threshold Weavers to perform at our ceremony to honor the lunar new year — an outdoor event in the middle of February. Undaunted by the potential for blizzard conditions, the group enthusiastically accepted the challenge.<br/><br/>
+          They arrived at our pasture and mesmerized us with enchanting songs. Each song was perfectly curated to match the mood and subject of the ritual. To introduce the new year, they chose a song about the cyclical passage of time. To welcome us to the bonfire, they sang about the flickering flames. To connect us to the pasture we were standing in, they offered a call-and-response about finding ourselves in nature.<br/><br/>
+          Their voices were harmonious and rhythmic. Their tone was angelic and soothing. Even without amplification and being outdoors, they were loud enough for all to hear. Their presence was the best part of the ceremony. I will definitely invite them back next year!
+        </blockquote>
+        <div class="attribution">
+          <div class="attribution-line"></div>
+          <div class="attribution-text">
+            Daniel &amp; Lara Ziskin
+            <span>Lunar New Year Ceremony · Paonia</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ PARALLAX BAND ══════════════════════════════════ -->
+  <div class="parallax-band">
+    <div class="parallax-inner" id="parallaxInner"></div>
+    <p class="parallax-text reveal">
+      "We don't perform at people.<br/>
+      We sing with them — into the tender places<br/>
+      that only song can reach."
+    </p>
+  </div>
+
+  <!-- ═══ THE WEAVERS ═══════════════════════════════════ -->
+  <section id="members" class="reveal">
+    <p class="label">The circle</p>
+    <h2>Meet the Weavers</h2>
+    <p>Five women, rooted in Paonia, called to sing at the edges where life asks the most of us.</p>
+
+    <div class="members-grid">
+      <div class="member-card reveal">
+        <div class="member-avatar">R</div>
+        <p class="member-name">Rebecca</p>
+        <p class="member-role">Voice · Weaver</p>
+      </div>
+      <div class="member-card reveal" style="transition-delay:0.1s;">
+        <div class="member-avatar">E</div>
+        <p class="member-name">Emily</p>
+        <p class="member-role">Voice · Weaver</p>
+      </div>
+      <div class="member-card reveal" style="transition-delay:0.2s;">
+        <div class="member-avatar">A</div>
+        <p class="member-name">Aja</p>
+        <p class="member-role">Voice · Weaver</p>
+      </div>
+      <div class="member-card reveal" style="transition-delay:0.3s;">
+        <div class="member-avatar">K</div>
+        <p class="member-name">Katie</p>
+        <p class="member-role">Voice · Weaver</p>
+      </div>
+      <div class="member-card reveal" style="transition-delay:0.4s;">
+        <div class="member-avatar">M</div>
+        <p class="member-name">Meghann</p>
+        <p class="member-role">Founder · Opaloka</p>
+      </div>
+    </div>
+
+    <!-- Opaloka connection -->
+    <div class="reveal" style="margin-top:4rem;padding:2.5rem;border:1px solid rgba(200,169,110,0.12);background:rgba(245,240,232,0.03);max-width:640px;margin-left:auto;margin-right:auto;text-align:left;">
+      <p style="font-family:var(--font-sans);font-size:0.65rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;">Sister Space</p>
+      <p style="font-family:var(--font-display);font-size:2rem;font-style:normal;margin-bottom:0.8rem;color:var(--cream);">Opaloka Song Temple</p>
+      <p style="font-size:0.97rem;font-weight:300;line-height:1.8;color:rgba(245,240,232,0.68);">The Threshold Weavers are rooted in Opaloka — a song temple in Paonia, Colorado founded by Meghann and devoted to connection, harmony, and peace. It is the hearth from which this circle was born.</p>
+    </div>
+  </section>
+
+  <!-- ═══ CONNECT ══════════════════════════════════════ -->
+  <section id="connect" class="reveal">
+    <p class="label">Find us</p>
+    <h2>Voices at the<br/><em>Threshold</em></h2>
+    <p>We offer ceremonial singing for hospice, grief circles, birth celebrations, and community gatherings. If you feel the call — to invite us, to collaborate, or simply to follow the music — we'd love to hear from you.</p>
+    <div>
+      <a href="/cdn-cgi/l/email-protection#98f0fdf4f4f7d8ecf0eafdebf0f7f4fceffdf9eefdeaebb6fbf7f5" class="btn">Reach Out</a>
+      <a href="#" class="btn btn-outline">Follow Our Journey</a>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══════════════════════════════════════ -->
+  <footer>
+    <div class="logo-footer">The Threshold Weavers</div>
+    <p>Paonia, Colorado · Roaring Fork Valley · Song at the crossings</p>
+  </footer>
+
+  <!-- ═══ SCRIPTS ══════════════════════════════════════ -->
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const cursorRing = document.getElementById('cursorRing');
+    let mouseX = 0, mouseY = 0;
+    let ringX = 0, ringY = 0;
+
+    document.addEventListener('mousemove', e => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursor.style.left = mouseX + 'px';
+      cursor.style.top  = mouseY + 'px';
+    });
+
+    function animateCursorRing() {
+      ringX += (mouseX - ringX) * 0.12;
+      ringY += (mouseY - ringY) * 0.12;
+      cursorRing.style.left = ringX + 'px';
+      cursorRing.style.top  = ringY + 'px';
+      requestAnimationFrame(animateCursorRing);
+    }
+    animateCursorRing();
+
+    // Enlarge cursor on interactive elements
+    document.querySelectorAll('a, button, .pillar, .member-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.transform = 'translate(-50%,-50%) scale(2.5)';
+        cursorRing.style.width = '60px';
+        cursorRing.style.height = '60px';
+        cursorRing.style.opacity = '0.5';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+        cursorRing.style.width = '36px';
+        cursorRing.style.height = '36px';
+        cursorRing.style.opacity = '1';
+      });
+    });
+
+    // Nav scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    reveals.forEach(r => revealObserver.observe(r));
+
+    // Parallax on scroll band
+    const parallaxInner = document.getElementById('parallaxInner');
+    window.addEventListener('scroll', () => {
+      const band = parallaxInner.parentElement;
+      const rect = band.getBoundingClientRect();
+    
